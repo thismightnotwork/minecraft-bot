@@ -1,21 +1,26 @@
 const mineflayer = require('mineflayer');
 const express = require('express');
 
-// ===== CONFIGURATION =====
-const SERVER_HOST = '46.224.39.184'; // Replace with your server IP
-const SERVER_PORT = 25565;                  // Default Minecraft port
-const BOT_NAME = 'KeepAlive';            // Unique bot username
+const SERVER_HOST = '46.224.39.184';
+const SERVER_PORT = 53265;
+const BOT_NAME = 'KeepAliveBot';
+const MC_VERSION = '1.21.10'; // replace with your exact server version
 
-// ===== CREATE MINEFLAYER BOT =====
 const bot = mineflayer.createBot({
   host: SERVER_HOST,
   port: SERVER_PORT,
   username: BOT_NAME,
-  version: false // auto-detect version
+  version: MC_VERSION
 });
 
 bot.on('login', () => {
   console.log('Bot connected! Keeping server awake.');
+
+  // Minimal anti-AFK
+  setInterval(() => {
+    bot.setControlState('jump', true);
+    setTimeout(() => bot.setControlState('jump', false), 500);
+  }, 60000);
 });
 
 bot.on('end', () => {
@@ -23,13 +28,7 @@ bot.on('end', () => {
   setTimeout(() => bot.connect(), 10000);
 });
 
-// Minimal anti-AFK: jump every 30s
-setInterval(() => {
-  bot.setControlState('jump', true);
-  setTimeout(() => bot.setControlState('jump', false), 500);
-}, 30000);
-
-// ===== TINY WEB SERVER (FOR RENDER KEEP-ALIVE) =====
+// Tiny web server for Render keep-alive
 const app = express();
 const PORT = process.env.PORT || 3000;
 
